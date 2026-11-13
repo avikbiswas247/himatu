@@ -1,69 +1,103 @@
-import Image from "next/image";
+import Link from "next/link";
+import { listProducts } from "@/repositories/product.repositories";
+import { Navbar } from "@/components/Navbar";
 
-export default function Home() {
+export const metadata = {
+  title: "Nike",
+  description: "Just do it.",
+};
+
+export default async function Home() {
+  const { data: products } = await listProducts({ pageSize: 8 });
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="bg-white text-black">
+      <Navbar />
+
+      {/* Hero */}
+      <section className="relative h-[85vh] w-full flex items-center justify-center bg-black overflow-hidden">
+        <img
+          src="/photos/Gear5.png"
+          alt="Nike Hero"
+          className="absolute inset-0 w-full h-full object-cover -z-10 opacity-60"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+        <div className="mx-auto max-w-[1400px] px-6 text-center">
+          <span className="inline-block mb-4 px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest border border-black">
+            New season
+          </span>
+          <h1 className="mb-6 text-[8vw] font-black uppercase leading-none">
+            Just Do It.
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="mb-8 text-[14px] font-semibold tracking-tight max-w-md mx-auto opacity-80">
+            Elevate your game with the latest from Nike.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/products"
+            className="inline-flex items-center justify-center px-8 py-4 bg-black text-white text-[12px] font-bold uppercase tracking-widest hover:bg-black/90"
           >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            Shop collection
+            <span className="ml-2 text-[10px]">→</span>
+          </Link>
         </div>
-      </main>
+      </section>
+
+      {/* Featured products */}
+      <section className="py-24 px-6">
+        <div className="mx-auto max-w-[1400px]">
+          <div className="flex items-center justify-between mb-12">
+            <h2 className="text-[24px] font-black uppercase tracking-tight">Featured</h2>
+            <Link
+              href="/products"
+              className="text-[11px] font-bold uppercase tracking-widest hover:text-black/60"
+            >
+              View all
+              <span className="ml-1 text-[10px]">→</span>
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8">
+            {(products || []).map((product: any) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
+  );
+}
+
+function ProductCard({ product }: { product: any }) {
+  const image = product.primary_image_url || "/photos/Gear5.png";
+  const price = product.starting_price
+    ? `BDT ${Number(product.starting_price).toFixed(2)}`
+    : "Price on request";
+
+  return (
+    <article className="group relative overflow-hidden bg-white">
+      <div className="aspect-[3/4] overflow-hidden">
+        <img
+          src={image}
+          alt={product.name}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+          loading="lazy"
+        />
+        <div className="absolute inset-0 bg-black/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <Link
+            href={`/products/${product.slug}`}
+            className="px-6 py-3 border border-white text-white text-[11px] font-bold uppercase tracking-widest hover:bg-white hover:text-black"
+          >
+            View product
+          </Link>
+        </div>
+      </div>
+      <div className="mt-4 px-2">
+        <Link
+          href={`/products/${product.slug}`}
+          className="block mb-1 text-[13px] font-bold uppercase tracking-widest text-black hover:text-black/60"
+        >
+          {product.name}
+        </Link>
+        <span className="text-[12px] font-bold tracking-tight text-black">{price}</span>
+      </div>
+    </article>
   );
 }
